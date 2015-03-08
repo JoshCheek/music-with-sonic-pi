@@ -1,22 +1,17 @@
 Make music with Ruby
 ====================
 
-
-Setup
------
-
 Install [Sonic Pi](http://sonic-pi.net/#mac).
 Looks like it's a `.dmg` so you can probably just run it,
 but if it ultimately gives you a "Sonic Pi.app" file (might not display the ".app"),
 then drag it to the "/Applications" directory.
 
-Install the `ruby-osc` gem:
+These commands assume you're in the same directory as the code.
+Start the Sonic Pi server (we send the music to it for playing).
 
 ```sh
-$ gem install ruby-osc
+$ ./run-server
 ```
-
-Place your song in the `music.rb` file.
 
 Execute it with:
 
