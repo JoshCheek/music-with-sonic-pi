@@ -16,7 +16,10 @@ $ ./run-server
 Execute it with:
 
 ```sh
-# play music.rb
+# play from the keyboard
+$ ./play keys
+
+# play the code in music.rb
 $ ./play
 
 # play some other song

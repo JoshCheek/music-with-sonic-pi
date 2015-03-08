@@ -28,8 +28,19 @@ rescue Errno::EADDRINUSE
   # no op, the server is up
 end
 
-if ARGV.first == '-'
+case ARGV.first
+when '-'
   client.send OSC::Message.new('/run-code', $stdin.read)
+when 'keys'
+  require 'io/console'
+  $stdin.noecho do
+    loop do
+      char = $stdin.getch
+      break if char == "\u0003" # experimentally seems to be wht Ctrl-C comes in as
+      note = char.ord - 'a'.ord + 60 # 50 is when you can start to hear it, I'm starting at 60 to be more in the middle
+      client.send OSC::Message.new('/run-code', "play #{note}")
+    end
+  end
 else
   filename = ARGV.first || 'music.rb'
   music    = File.read(filename)
