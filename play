@@ -1,20 +1,30 @@
 #!/usr/bin/ruby
 
-def port
-  $port ||= ENV.fetch 'SONIC_PI_PORT', 4557
-end
-
-def host
-  $host ||= ENV.fetch 'SONIC_PI_HOST', 'localhost'
-end
-
-def client
-  $client ||= OSC::Client.new host, port
-end
-
-# Add Sonic Pi's osc-ruby to the $LOAD_PATH
+# Use Sonic Pi's version of osc-ruby, so you don't have to install any gems to use this code
 $LOAD_PATH.unshift '/Applications/Sonic Pi.app/app/server/vendor/osc-ruby/lib'
 require 'osc-ruby'
+
+class << self
+  attr_accessor :which_synth
+  def synths
+    %w[dull_bell pretty_bell beep saw pulse tri dsaw supersaw zawa prophet]
+  end
+
+  def port
+    @port ||= ENV.fetch 'SONIC_PI_PORT', 4557
+  end
+
+  def host
+    @host ||= ENV.fetch 'SONIC_PI_HOST', 'localhost'
+  end
+
+  def client
+    @client ||= OSC::Client.new host, port
+  end
+end
+
+self.which_synth = 0
+
 
 # ensure the server is running
 begin
@@ -35,10 +45,18 @@ when 'keys'
   require 'io/console'
   $stdin.noecho do
     loop do
-      char = $stdin.getch
-      break if char == "\u0003" # experimentally seems to be wht Ctrl-C comes in as
-      note = char.ord - 'a'.ord + 60 # 50 is when you can start to hear it, I'm starting at 60 to be more in the middle
-      client.send OSC::Message.new('/run-code', "play #{note}")
+      music = "use_synth :#{synths[which_synth]}\n"
+      char  = $stdin.getch
+      case char
+      when "\u0003", "\r", "\n"
+        break
+      when '0'..'9'
+        self.which_synth = char.to_i
+      when 'a'..'z'
+        note = char.ord - 'a'.ord + 60 # 50 is when you can start to hear it, I'm starting at 60 to be more in the middle
+        music << "play #{note}\n"
+        client.send OSC::Message.new('/run-code', music)
+      end
     end
   end
 else
