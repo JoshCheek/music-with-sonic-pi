@@ -1,0 +1,37 @@
+#!/usr/bin/ruby
+
+def port
+  $port ||= ENV.fetch 'SONIC_PI_PORT', 4557
+end
+
+def host
+  $host ||= ENV.fetch 'SONIC_PI_HOST', 'localhost'
+end
+
+def client
+  $client ||= OSC::Client.new host, port
+end
+
+# Add Sonic Pi's osc-ruby to the $LOAD_PATH
+$LOAD_PATH.unshift '/Applications/Sonic Pi.app/app/server/vendor/osc-ruby/lib'
+require 'osc-ruby'
+
+# ensure the server is running
+begin
+  # There is a /ping endpoint, but can't figure out how to get the message back out
+  # https://github.com/samaaron/sonic-pi/blob/d4a3e7224a01e4a7ba08d42bbd670db8d0ea1d0b/app/server/bin/sonic-pi-server.rb#L198
+  OSC::Server.new(port).stop
+  $stderr.puts "Looks like the server isn't running"
+  $stderr.puts "try running ./run-server in another window"
+  exit 1
+rescue Errno::EADDRINUSE
+  # no op, the server is up
+end
+
+if ARGV.first == '-'
+  client.send OSC::Message.new('/run-code', $stdin.read)
+else
+  filename = ARGV.first || 'music.rb'
+  music    = File.read(filename)
+  client.send OSC::Message.new('/run-code', music)
+end

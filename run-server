@@ -1,0 +1,6 @@
+#!/bin/sh
+
+ruby='/Applications/Sonic Pi.app/app/server/native/osx/ruby/bin/ruby'
+server='/Applications/Sonic Pi.app/app/server/bin/sonic-pi-server.rb'
+
+"$ruby" "$server"
